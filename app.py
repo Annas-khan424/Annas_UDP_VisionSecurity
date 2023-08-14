@@ -39,3 +39,19 @@ def generate_qr_code(data):
     qr.make(fit=True)
     qr_code = qr.make_image(fill_color='black', back_color='white')
     return qr_code
+
+
+def save_student_photo(photo):
+    # Create the 'uploads' directory if it doesn't exist
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+
+    # Generate a unique filename for the photo
+    photo_filename = f"{photo.filename.rsplit('.', 1)[0]}_photo.{photo.filename.rsplit('.', 1)[1]}"
+    photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
+
+    # Save the photo only if it exists
+    if photo:
+        photo.save(photo_path)
+
+    return photo_filename
