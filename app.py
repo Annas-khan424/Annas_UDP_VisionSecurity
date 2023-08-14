@@ -30,3 +30,12 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+def generate_qr_code(data):
+    import qrcode
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(data)
+    qr.make(fit=True)
+    qr_code = qr.make_image(fill_color='black', back_color='white')
+    return qr_code
