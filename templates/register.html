@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Register</title>
+  </head>
+  <body>
+    {% with messages = get_flashed_messages() %} {% if messages %} {% for
+    message in messages %}
+    <div
+      style="background-color: {% if 'danger' in message %}red{% elif 'success' in message %}green{% else %}gray{% endif %}; color: white; padding: 10px;"
+    >
+      {{ message }}
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <h1>Register</h1>
+    <form method="post" enctype="multipart/form-data">
+      <label for="student_name">Student Name:</label>
+      <input type="text" id="student_name" name="student_name" required />
+      <br />
+      <label for="student_id">Student ID:</label>
+      <input type="text" id="student_id" name="student_id" required />
+      <br />
+      <label for="course_end_date">Course End Date:</label>
+      <input type="date" id="course_end_date" name="course_end_date" required />
+      <br />
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required />
+      <br />
+      <label for="student_photo">Student Photo:</label>
+      <input
+        type="file"
+        id="student_photo"
+        name="student_photo"
+        accept="image/*"
+        required
+      />
+      <br />
+      <input type="submit" value="Register" />
+    </form>
+    <p>
+      Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+    </p>
+  </body>
+</html>
