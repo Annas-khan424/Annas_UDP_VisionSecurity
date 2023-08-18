@@ -55,3 +55,27 @@ def save_student_photo(photo):
         photo.save(photo_path)
 
     return photo_filename
+
+
+def detect_single_face(student_photo):
+    detector = MTCNN()
+    # Convert the student_photo object to a NumPy array
+    if isinstance(student_photo, np.ndarray):
+        image_data = student_photo
+    else:
+        # If the student_photo is a FileStorage object (as provided by Flask's request), convert it to a PIL image
+        img = Image.open(student_photo)
+        image_data = np.array(img)
+
+    # Ensure the image has three channels (RGB)
+    if len(image_data.shape) == 2:
+        image_data = cv2.cvtColor(image_data, cv2.COLOR_GRAY2RGB)
+    elif len(image_data.shape) == 4:
+        image_data = image_data[..., :3]
+
+    results = detector.detect_faces(image_data)
+
+    if len(results) != 1:
+        return False
+    else:
+        return True
