@@ -130,3 +130,27 @@ def save_student_data(student_name, student_id, course_end_date, password, stude
     return photo_path, qr_path
 
 
+@app.errorhandler(ValueError)
+def handle_value_error(e):
+    return render_template('error.html', error_message="Invalid photo. Please upload a photo with a single face.")
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # Get form data
+        student_name = request.form['student_name']
+        student_id = request.form['student_id']
+        course_end_date = request.form['course_end_date']
+        password = request.form['password']
+        student_photo = request.files['student_photo']
+
+        # Save student data, photo, and QR code, and get their paths
+        photo_path, qr_code_path = save_student_data(
+            student_name, student_id, course_end_date, password, student_photo)
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+
