@@ -79,3 +79,20 @@ def detect_single_face(student_photo):
         return False
     else:
         return True
+
+def save_student_data(student_name, student_id, course_end_date, password, student_photo):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create a temporary copy of the photo
+        temp_photo_path = os.path.join(temp_dir, "temp_photo.jpg")
+        student_photo.save(temp_photo_path)
+
+        # Check if there is a single face in the temporary photo
+        if not detect_single_face(temp_photo_path):
+            # Raise a ValueError with a custom error message
+            raise ValueError(
+                "Invalid photo. Please upload a photo with a single face.")
+
+        # Save the student photo with a unique filename
+        photo_filename = f"{student_name.replace(' ', '_')}_photo.jpg"
+        photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
+        shutil.move(temp_photo_path, photo_path)
