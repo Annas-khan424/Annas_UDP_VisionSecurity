@@ -96,3 +96,11 @@ def save_student_data(student_name, student_id, course_end_date, password, stude
         photo_filename = f"{student_name.replace(' ', '_')}_photo.jpg"
         photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
         shutil.move(temp_photo_path, photo_path)
+
+        # Generate the QR code and save it with a unique filename
+    qr_data = f"Name: {student_name}, ID: {student_id}, Course End Date: {course_end_date}, Password: {password}"
+    qr_code = generate_qr_code(qr_data)
+    qr_filename = f"{student_name.replace(' ', '_')}_qrcode.png"
+    qr_path = os.path.join(app.config['UPLOAD_FOLDER'], qr_filename)
+    qr_code.save(qr_path)
+
