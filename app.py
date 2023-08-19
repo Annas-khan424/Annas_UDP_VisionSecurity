@@ -104,3 +104,29 @@ def save_student_data(student_name, student_id, course_end_date, password, stude
     qr_path = os.path.join(app.config['UPLOAD_FOLDER'], qr_filename)
     qr_code.save(qr_path)
 
+     #Save the student data and photo/QR code paths to the database
+    connection = mysql.connect()
+    cursor = connection.cursor()
+    try:
+        query = "INSERT INTO students (student_name, student_id, course_end_date, password, photo_path, qr_code_path) VALUES (%s, %s, %s, %s, %s, %s)"
+        data = (student_name, student_id, course_end_date, password,
+                photo_path.replace('\\', '/'), qr_path.replace('\\', '/'))
+        cursor.execute(query, data)
+        connection.commit()
+    except Exception as e:
+        # In case of an error, remove the uploaded files
+        os.remove(photo_path)
+        os.remove(qr_path)
+        raise e
+    finally:
+        connection.close()
+
+    pubnub.publish().channel("new_student_channel").message({
+        "student_name": student_name,
+        "student_id": student_id,
+        "message": "New student registered!"
+    }).sync()
+
+    return photo_path, qr_path
+
+
