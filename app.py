@@ -154,3 +154,32 @@ def register():
     return render_template('register.html')
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        password = request.form['password']
+
+        connection = mysql.connect()
+        cursor = connection.cursor()
+        try:
+            query = "SELECT * FROM students WHERE student_id = %s AND password = %s"
+            data = (student_id, password)
+            cursor.execute(query, data)
+            student = cursor.fetchone()
+
+            if student:
+                session['logged_in'] = True
+                # Use student name for session
+                session['username'] = student[1]
+                flash('Login successful', 'success')
+                return redirect(url_for('profile'))
+            else:
+                flash('Invalid credentials. Please try again.', 'danger')
+        except Exception as e:
+            flash('Error occurred during login: ' + str(e), 'danger')
+        finally:
+            connection.close()
+
+    return render_template('login.html')
+
