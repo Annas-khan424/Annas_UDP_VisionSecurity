@@ -183,3 +183,48 @@ def login():
 
     return render_template('login.html')
 
+
+app.route('/')
+def home():
+    return render_template('home.html')
+
+
+@app.route('/profile')
+def profile():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    # Use student name stored in session
+    student_name = session.get('username')
+
+    connection = mysql.connect()
+    cursor = connection.cursor()
+    try:
+        query = "SELECT student_name, student_id, course_end_date, photo_path, qr_code_path FROM students WHERE student_name = %s"
+        data = (student_name,)
+        cursor.execute(query, data)
+        student = cursor.fetchone()
+
+        if student:
+            student_name, student_id, course_end_date, photo_path, qr_code_path = student
+        else:
+            flash('Student details not found.', 'danger')
+            return redirect(url_for('login'))
+    except Exception as e:
+        flash('Error occurred while accessing student details: ' + str(e), 'danger')
+        return redirect(url_for('login'))
+    finally:
+        connection.close()
+
+    return render_template('profile.html', student_name=student_name, student_id=student_id,
+                           course_end_date=course_end_date, photo_path=photo_path, qr_code_path=qr_code_path)
+
+
+@app.route('/uploaded_file/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/download_qr_code/<filename>')
+def download_qr_code(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True, mimetype='image/png')
