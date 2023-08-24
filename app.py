@@ -228,3 +228,52 @@ def uploaded_file(filename):
 @app.route('/download_qr_code/<filename>')
 def download_qr_code(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True, mimetype='image/png')
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    # Clear the session data to log the user out
+    session.clear()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
+
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    # Get the QR code path and student photo path from the database
+    connection = mysql.connect()
+    cursor = connection.cursor()
+    try:
+        query = "SELECT qr_code_path, photo_path FROM students WHERE student_name = %s"
+        data = (session['username'],)
+        cursor.execute(query, data)
+        paths = cursor.fetchone()
+
+        if paths:
+            qr_code_path, photo_path = paths
+
+            # Delete the user's photo and QR code files if they exist
+            if os.path.exists(photo_path):
+                os.remove(photo_path)
+            if os.path.exists(qr_code_path):
+                os.remove(qr_code_path)
+
+            # Delete the user account from the database
+            delete_query = "DELETE FROM students WHERE student_name = %s"
+            cursor.execute(delete_query, data)
+            connection.commit()
+
+            # Clear the session data to log the user out after account deletion
+            session.clear()
+            flash('Your account has been deleted.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Student details not found.', 'danger')
+            return redirect(url_for('login'))
+    except Exception as e:
+        flash('Error occurred while deleting the account: ' + str(e), 'danger')
+        return redirect(url_for('profile'))
+    finally:
+        connection.close()
