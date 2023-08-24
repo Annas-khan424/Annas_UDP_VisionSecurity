@@ -4,6 +4,10 @@ import subprocess
 import os
 import pyttsx3
 import RPi.GPIO as GPIO
+from pubnub.pubnub import PubNub
+from pubnub.enums import PNStatusCategory
+from pubnub.callbacks import SubscribeCallback
+from pubnub.pnconfiguration import PNConfiguration
 
 # Initialize the GPIO pins
 GPIO.setmode(GPIO.BCM)
@@ -12,6 +16,32 @@ GPIO.setup(PIR_PIN, GPIO.IN)
 
 # Initialize the pyttsx3 engine
 engine = pyttsx3.init()
+
+# PubNub configuration
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'sub-c-3cb50288-4d4b-42bc-99a2-85c3ce3e1082'  # Replace with your actual subscribe key
+pnconfig.user_id = "client1"
+pubnub = PubNub(pnconfig)
+
+class MySubscribeCallback(SubscribeCallback):
+    def presence(self, pubnub, presence):
+        pass  # Handle presence events if needed
+
+
+    def status(self, pubnub, status):
+        if status.category == PNStatusCategory.PNConnectedCategory:
+            print("Subscribed to the channel!")
+
+    def message(self, pubnub, message):
+        student_name = message.message.get("student_name")
+        student_id = message.message.get("student_id")
+        print(f"New student registered: {student_name}, ID: {student_id}")
+        speak(f"New student registered: {student_name}, ID: {student_id}")
+
+# Subscribe to the new_student_channel
+pubnub.add_listener(MySubscribeCallback())
+pubnub.subscribe().channels('new_student_channel').execute()
+
 # Function to speak the given text
 def speak(text):
     engine.say(text)
