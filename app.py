@@ -301,3 +301,82 @@ def is_qr_code(image):
             qr_code_data.append(obj.data.decode('utf-8'))
         return qr_code_data
     return None
+
+@app.route('/process_photo', methods=['POST'])
+def process_photo():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if not file or not allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file format or type'}), 400
+
+    # Save the uploaded photo temporarily
+    temp_path = 'temp.jpg'
+    file.save(temp_path)
+
+    # Load the input photo
+    input_image = face_recognition.load_image_file(temp_path)
+
+    # Check if it is a QR code
+    qr_code_data = is_qr_code(input_image)
+    if qr_code_data:
+        os.remove(temp_path)
+        return jsonify({'qr_code_data': qr_code_data})
+
+    # Detect faces in the input image
+    input_encodings = get_face_embedding(input_image)
+
+    # If no face is detected or more than one face detected, or if QR code is detected, exit
+    if len(input_encodings) != 1:
+        os.remove(temp_path)
+        return jsonify({'error': 'Invalid photo: No face or multiple faces detected'}), 400
+
+    # Directory containing face photos for comparison
+    uploads_dir = "uploads"
+
+    # Load the face encodings for the photos in the uploads folder
+    known_face_encodings = []
+    known_face_names = []
+
+    for filename in os.listdir(uploads_dir):
+        if filename.endswith(".jpg") or filename.endswith(".png"):
+            face_photo_path = os.path.join(uploads_dir, filename)
+            face_photo = face_recognition.load_image_file(face_photo_path)
+            face_encoding = face_recognition.api.face_encodings(face_photo)
+
+            # If no face is detected in the photo, skip comparison
+            if not face_encoding:
+                continue
+
+            # Use the first face encoding (assuming one face per photo)
+            known_face_encodings.append(face_encoding[0])
+            known_face_names.append(filename)
+
+    # Compare the face encodings
+    face_distances = face_recognition.api.face_distance(
+        known_face_encodings, input_encodings[0])
+
+    # You can adjust this distance threshold based on your needs
+    distance_threshold = 0.4
+
+    # Print the result
+    for i, face_distance in enumerate(face_distances):
+        if face_distance < distance_threshold:
+            os.remove(temp_path)
+            return jsonify({'result': f'Face matches with {known_face_names[i]}'})
+
+    os.remove(temp_path)
+    return jsonify({'result': 'Face does not match with any uploaded face'})
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'jpg', 'jpeg', 'png'}
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
