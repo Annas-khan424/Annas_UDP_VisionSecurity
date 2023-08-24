@@ -1,29 +1,22 @@
+import time
 import requests
+import subprocess
+import os
+import pyttsx3
+import RPi.GPIO as GPIO
 
-# Replace this with the URL of your Flask app
-url = 'http://127.0.0.1:5000/process_photo'
+# Initialize the GPIO pins
+GPIO.setmode(GPIO.BCM)
+PIR_PIN = 17  # Change to your chosen GPIO pin
+GPIO.setup(PIR_PIN, GPIO.IN)
 
-# Replace this with the path to the image file you want to test
-image_file_path = 'C:\\Users\\Khan Machine\\Pictures\\check.jpg'
+# Initialize the pyttsx3 engine
+engine = pyttsx3.init()
+# Function to speak the given text
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
 
-
-
-
-# Send the POST request with the image file
-with open(image_file_path, 'rb') as file:
-    files = {'file': file}
-    response = requests.post(url, files=files)
-
-# Print the response
-if response.status_code == 200:
-    data = response.json()
-    if 'qr_code_data' in data:
-        print("QR Code Data:")
-        for qr_data in data['qr_code_data']:
-            print(qr_data)
-    elif 'result' in data:
-        print(data['result'])
-    elif 'error' in data:
-        print("Error:", data['error'])
-else:
-    print("Error occurred. Status code:", response.status_code)
+# Raspberry Pi IP and URL
+raspberry_pi_ip = "192.168.1.2"
+url = f"http://{raspberry_pi_ip}:5000/process_photo"
