@@ -78,4 +78,12 @@ try:
             except Exception as e:
                 print("Error processing server response:", str(e))
                 speak("Error processing server response")
+
+except KeyboardInterrupt:
+    pass  # Exit gracefully on Ctrl+C
+finally:
+    GPIO.cleanup()
+    if os.path.exists(photo_filename):
+        os.remove(photo_filename)
+        print("Temporary photo file deleted.")               
             
