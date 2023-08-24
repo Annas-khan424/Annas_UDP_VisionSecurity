@@ -277,3 +277,27 @@ def delete_account():
         return redirect(url_for('profile'))
     finally:
         connection.close()
+
+
+# Function to calculate the face embeddings using FaceNet model
+def get_face_embedding(image):
+    resnet = face_recognition.api.face_encodings(image)
+    return resnet
+
+
+# Function to calculate the cosine distance between two embeddings
+def calculate_cosine_distance(embedding1, embedding2):
+    embedding1 = embedding1[0]
+    embedding2 = embedding2[0]
+    return 1.0 - np.dot(embedding1, embedding2) / (np.linalg.norm(embedding1) * np.linalg.norm(embedding2))
+
+
+# Function to check if the image contains a QR code and return its details
+def is_qr_code(image):
+    decoded_objects = pyzbar.decode(image)
+    if decoded_objects:
+        qr_code_data = []
+        for obj in decoded_objects:
+            qr_code_data.append(obj.data.decode('utf-8'))
+        return qr_code_data
+    return None
