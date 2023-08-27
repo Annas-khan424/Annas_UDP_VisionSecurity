@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session, jsonify
 from mtcnn import MTCNN
 from flask_restful import Api, Resource
@@ -12,6 +13,8 @@ import shutil
 import numpy as np
 import face_recognition
 from pyzbar import pyzbar
+from pubnub.pubnub import PubNub
+from pubnub.pnconfiguration import PNConfiguration
 
 
 app = Flask(__name__)
@@ -24,6 +27,15 @@ mysql = MySQL(app)
 
 app.secret_key = 'secret_key_here'
 app.config['UPLOAD_FOLDER'] = 'uploads'
+
+
+pnconfig = PNConfiguration()
+
+pnconfig.subscribe_key = 'sub-c-3cb50288-4d4b-42bc-99a2-85c3ce3e1082'
+pnconfig.publish_key = 'pub-c-106f9267-e2cf-4364-8778-6b0f7b90a63f'
+pnconfig.user_id = "server"
+pubnub = PubNub(pnconfig)
+
 
 # Function to save student photo and return the path
 
@@ -80,6 +92,7 @@ def detect_single_face(student_photo):
     else:
         return True
 
+
 def save_student_data(student_name, student_id, course_end_date, password, student_photo):
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create a temporary copy of the photo
@@ -97,14 +110,14 @@ def save_student_data(student_name, student_id, course_end_date, password, stude
         photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
         shutil.move(temp_photo_path, photo_path)
 
-        # Generate the QR code and save it with a unique filename
+    # Generate the QR code and save it with a unique filename
     qr_data = f"Name: {student_name}, ID: {student_id}, Course End Date: {course_end_date}, Password: {password}"
     qr_code = generate_qr_code(qr_data)
     qr_filename = f"{student_name.replace(' ', '_')}_qrcode.png"
     qr_path = os.path.join(app.config['UPLOAD_FOLDER'], qr_filename)
     qr_code.save(qr_path)
 
-     #Save the student data and photo/QR code paths to the database
+    # Save the student data and photo/QR code paths to the database
     connection = mysql.connect()
     cursor = connection.cursor()
     try:
@@ -184,7 +197,7 @@ def login():
     return render_template('login.html')
 
 
-app.route('/')
+@app.route('/')
 def home():
     return render_template('home.html')
 
@@ -228,6 +241,7 @@ def uploaded_file(filename):
 @app.route('/download_qr_code/<filename>')
 def download_qr_code(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True, mimetype='image/png')
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -301,6 +315,7 @@ def is_qr_code(image):
             qr_code_data.append(obj.data.decode('utf-8'))
         return qr_code_data
     return None
+
 
 @app.route('/process_photo', methods=['POST'])
 def process_photo():
