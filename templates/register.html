@@ -2,12 +2,88 @@
 <html>
   <head>
     <title>Register</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="date"],
+      input[type="file"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+      }
+
+      input[type="submit"] {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+
+      p {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .message {
+        background-color: red;
+        color: white;
+        padding: 10px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+      }
+
+      .message.success {
+        background-color: green;
+      }
+    </style>
   </head>
   <body>
     {% with messages = get_flashed_messages() %} {% if messages %} {% for
     message in messages %}
     <div
-      style="background-color: {% if 'danger' in message %}red{% elif 'success' in message %}green{% else %}gray{% endif %}; color: white; padding: 10px;"
+      class="message {% if 'danger' in message %}danger{% elif 'success' in message %}success{% else %}gray{% endif %}"
     >
       {{ message }}
     </div>
