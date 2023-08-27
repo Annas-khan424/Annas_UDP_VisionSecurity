@@ -2,42 +2,119 @@
 <html>
   <head>
     <title>Profile</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f8f8;
+      }
+
+      .message {
+        background-color: #d9534f;
+        color: white;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .success-message {
+        background-color: #5cb85c;
+      }
+
+      .info-message {
+        background-color: #5bc0de;
+      }
+
+      .profile-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+      .profile-info {
+        margin-bottom: 20px;
+      }
+
+      .profile-info strong {
+        display: inline-block;
+        width: 150px;
+        font-weight: bold;
+      }
+
+      .profile-actions {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .profile-actions form {
+        margin: 0;
+      }
+
+      input[type="submit"] {
+        background-color: #d9534f;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #c9302c;
+      }
+    </style>
   </head>
   <body>
     {% with messages = get_flashed_messages() %} {% if messages %} {% for
     message in messages %}
     <div
-      style="background-color: {% if 'danger' in message %}red{% elif 'success' in message %}green{% else %}gray{% endif %}; color: white; padding: 10px;"
+      class="message {% if 'danger' in message %}danger-message{% elif 'success' in message %}success-message{% else %}info-message{% endif %}"
     >
       {{ message }}
     </div>
-    {% endfor %} {% endif %} {% endwith %} {% if session.logged_in %}
-    <h1>Welcome to Your Profile, {{ student_name }}!</h1>
-    <img
-      src="{{ url_for('uploaded_file', filename=photo_path.split('/')[-1]) }}"
-      alt="Student Photo"
-    />
-    <br />
-    <strong>Name:</strong> {{ student_name }}
-    <br />
-    <strong>Student ID:</strong> {{ student_id }}
-    <br />
-    <strong>Course End Date:</strong> {{ course_end_date }}
-    <br />
-    <a
-      href="{{ url_for('download_qr_code', filename=qr_code_path.split('/')[-1]) }}"
-      download
-      >Download QR Code</a
-    >
-    <br />
-    <form method="post" action="{{ url_for('delete_account') }}">
-      <input type="submit" value="Delete Account" />
-    </form>
-    <form method="post" action="{{ url_for('logout') }}">
-      <input type="submit" value="Logout" />
-    </form>
-    {% else %}
-    <h1>Please log in to view your profile.</h1>
-    {% endif %}
+    {% endfor %} {% endif %} {% endwith %}
+    <div class="profile-container">
+      {% if session.logged_in %}
+      <h1>Welcome to Your Profile, {{ student_name }}!</h1>
+      <img
+        class="profile-image"
+        src="{{ url_for('uploaded_file', filename=photo_path.split('/')[-1]) }}"
+        alt="Student Photo"
+      />
+      <div class="profile-info">
+        <strong>Name:</strong> {{ student_name }}<br />
+        <strong>Student ID:</strong> {{ student_id }}<br />
+        <strong>Course End Date:</strong> {{ course_end_date }}
+      </div>
+      <div class="profile-actions">
+        <form
+          method="get"
+          action="{{ url_for('download_qr_code', filename=qr_code_path.split('/')[-1]) }}"
+        >
+          <input type="submit" value="Download QR Code" />
+        </form>
+        <form method="post" action="{{ url_for('delete_account') }}">
+          <input type="submit" value="Delete Account" />
+        </form>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="submit" value="Logout" />
+        </form>
+      </div>
+      {% else %}
+      <h1>Please log in to view your profile.</h1>
+      {% endif %}
+    </div>
   </body>
 </html>
