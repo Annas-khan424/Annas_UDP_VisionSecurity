@@ -27,7 +27,6 @@ class MySubscribeCallback(SubscribeCallback):
     def presence(self, pubnub, presence):
         pass  # Handle presence events if needed
 
-
     def status(self, pubnub, status):
         if status.category == PNStatusCategory.PNConnectedCategory:
             print("Subscribed to the channel!")
@@ -71,6 +70,7 @@ try:
                 response = requests.post(url, files=files)
                 
             speak("Photo sent. Server response received.")
+            
             # Print the response
             print("Response:", response.text)
             
@@ -108,12 +108,12 @@ try:
             except Exception as e:
                 print("Error processing server response:", str(e))
                 speak("Error processing server response")
-
+            
 except KeyboardInterrupt:
     pass  # Exit gracefully on Ctrl+C
 finally:
     GPIO.cleanup()
     if os.path.exists(photo_filename):
         os.remove(photo_filename)
-        print("Temporary photo file deleted.")               
+        print("Temporary photo file deleted.")        
             
